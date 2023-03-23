@@ -35,7 +35,7 @@ python texturegen.py --data_folder=./data/stationary --output_folder=./outputs/r
 ```
 
 ## Controlled Texture Synthesis
-Synthesize texture based on progression, orientation, both or label:
+Synthesize texture based on progression, orientation, both or anotation:
 ## 1. Progression Control
   
 ![progression](./images/progression.jpg)
