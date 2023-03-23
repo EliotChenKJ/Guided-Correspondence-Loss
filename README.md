@@ -1,5 +1,5 @@
 # Neural Texture Synthesis with Guided Correspondence - PyTorch version
-Official PyTorch implementation of "Neural Texture Synthesis with Guided Correspondence" [CVPR 2023]. See [Homepage]() for more details.
+Official PyTorch implementation of "Neural Texture Synthesis with Guided Correspondence" [CVPR 2023]. More result can be seen[here](https://eliotchenkj.github.io/Guided-Correspondence-Loss-Sup/).
 
 ## Prerequisites
 * Python 3.7.10
