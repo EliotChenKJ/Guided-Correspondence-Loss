@@ -1,5 +1,7 @@
 # Neural Texture Synthesis with Guided Correspondence - PyTorch version
 
+> Notice: Still reorganizing and testing codes... Feel free to contact me if something not work.
+
 Official PyTorch implementation of "[Neural Texture Synthesis with Guided Correspondence](https://vcc.tech/research/2023/DeepTex)" [CVPR 2023]. More result can be seen [here](https://eliotchenkj.github.io/Guided-Correspondence-Loss-Sup/).  
   
 ![teaser](./images/teaser.jpg)
