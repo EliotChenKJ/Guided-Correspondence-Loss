@@ -273,3 +273,75 @@ class AugmentedGuidedCorrespondenceLoss_forward(torch.nn.Module):
         loss = self.calculate_loss(d_total)
 
         return loss
+    
+
+# UTILS
+def isNone(x):
+    return type(x) is type(None)
+
+
+def feature_normalize(feature_in):
+    feature_norm = torch.norm(feature_in, 2, 1, keepdim=True) + sys.float_info.epsilon
+    feature_in_norm = torch.div(feature_in, feature_norm)
+    return feature_in_norm, feature_norm
+
+
+def batch_patch_extraction(image_tensor, kernel_size, stride):
+    """ [n, c, h, w] -> [n, np(num_patch), c, k, k] """
+    n, c, h, w = image_tensor.shape
+    h_out = math.floor((h - (kernel_size-1) - 1) / stride + 1)
+    w_out = math.floor((w - (kernel_size-1) - 1) / stride + 1)
+    unfold_tensor = F.unfold(image_tensor, kernel_size=kernel_size, stride=stride)
+    unfold_tensor = unfold_tensor.contiguous().view(
+        n, c * kernel_size * kernel_size, h_out, w_out)
+    return unfold_tensor
+
+
+def compute_cosine_distance(x, y):
+    N, C, _, _ = x.size()
+
+    # to normalized feature vectors
+    y_mean = y.view(N, C, -1).mean(dim=-1).unsqueeze(dim=-1).unsqueeze(dim=-1)
+    x, x_norm = feature_normalize(x - y_mean)  # batch_size * feature_depth * feature_size * feature_size
+    y, y_norm = feature_normalize(y - y_mean)  # batch_size * feature_depth * feature_size * feature_size
+    x = x.view(N, C, -1)
+    y = y.view(N, C, -1)
+
+    # cosine distance = 1 - similarity
+    x_permute = x.permute(0, 2, 1)  # batch_size * feature_size^2 * feature_depth
+
+    # convert similarity to distance
+    sim = torch.matmul(x_permute, y)
+    dist = (1 - sim) / 2 # batch_size * feature_size^2 * feature_size^2
+
+    return dist.clamp(min=0.)
+
+
+def compute_l2_distance(x, y):
+    N, C, Hx, Wx = x.size()
+    _, _, Hy, Wy = y.size()
+    x_vec = x.view(N, C, -1)
+    y_vec = y.view(N, C, -1)
+    x_s = torch.sum(x_vec ** 2, dim=1)
+    y_s = torch.sum(y_vec ** 2, dim=1)
+
+    A = y_vec.transpose(1, 2) @ x_vec
+    dist = y_s.unsqueeze(2).expand_as(A) - 2 * A + x_s.unsqueeze(1).expand_as(A)
+    dist = dist.transpose(1, 2).reshape(N, Hx*Wx, Hy*Wy)
+    dist = dist.clamp(min=0.) / C
+
+    return dist
+
+def compute_orient_distance(x, y, patch_size):
+    x = x.view(x.shape[0], 2, patch_size ** 2, x.shape[-2], x.shape[-1])
+    y = y.view(y.shape[0], 2, patch_size ** 2, y.shape[-2], y.shape[-1])
+
+    dist = 0
+    for i in range(patch_size ** 2):
+        dist += torch.min(
+            compute_l2_distance(x[:, :, i], y[:, :, i]),
+            compute_l2_distance(x[:, :, i], -y[:, :, i])
+        )
+    dist /= patch_size ** 2
+
+    return dist
