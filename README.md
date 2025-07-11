@@ -67,6 +67,18 @@ python texturegen_aug.py --data_folder=./data/both --output_folder=./outputs/res
 ```bash
 python texturegen.py --data_folder=./data/label --output_folder=./outputs/result_label --image_name=1-image.jpg --refer_prog_name=1-label.jpg --trg_prog_name=cat.jpg --lambda_progression=10 --lambda_occurrence=0.05 --size=256 --output_size=512 512
 ```
+## 5. Single Image Editing
+
+A simple editing demo using the guided correspondence loss is provided in `single-image-editing/`.
+Run the following commands to generate results:
+
+```bash
+cd single-image-editing
+python main.py
+```
+
+Outputs will be saved in `single-image-editing/outputs/`.
+
 
 ## Acknowledge
 Sincerely thank [xchhuang](https://github.com/xchhuang) and [tchambon](https://github.com/tchambon) for their wonderful works:
